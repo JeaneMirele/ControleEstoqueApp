@@ -18,7 +18,7 @@ class ConfigureProviders {
     return ConfigureProviders(providers: [
      // Provider<TodoService>.value(value: todoService),
      // Provider<TodoRepository>.value(value: todoRepository),
-      ChangeNotifierProvider<EstoqueViewModel>.value(value: egit stoqueViewModel)
+      ChangeNotifierProvider<EstoqueViewModel>.value(value: estoqueViewModel)
     ]);
   }
 }

@@ -24,8 +24,8 @@ tasks.register<Delete>("clean") {
 }
 
 plugins {
-    id("com.android.application") version "8.2.0" apply false
-    id("com.android.library") version "8.2.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.20" apply false
+    id("com.android.application") version "8.9.1" apply false
+    // id("com.android.library") version "8.9.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false // <--- MUDOU AQUI (de 1.9.20 para 2.1.0)
     id("com.google.gms.google-services") version "4.3.15" apply false
 }
