@@ -13,12 +13,12 @@ class ConfigureProviders {
 
     //final todoService = TodoService();
     //final todoRepository = TodoRepository(todoService);
-    final EstoqueViewModel = EstoqueViewModel();
+    final estoqueViewModel = EstoqueViewModel();
 
     return ConfigureProviders(providers: [
      // Provider<TodoService>.value(value: todoService),
      // Provider<TodoRepository>.value(value: todoRepository),
-      ChangeNotifierProvider<EstoqueViewModel>.value(value: EstoqueViewModel)
+      ChangeNotifierProvider<EstoqueViewModel>.value(value: egit stoqueViewModel)
     ]);
   }
 }

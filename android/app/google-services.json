@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "873295292286",
+    "project_id": "controleestoqueapp-cad41",
+    "storage_bucket": "controleestoqueapp-cad41.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873295292286:android:904c87423bba3d4c7c352f",
+        "android_client_info": {
+          "package_name": "com.example.controle_estoque_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDTIsfZ1J3oBRf0ktC_ZRcKcKOKMRntpY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
