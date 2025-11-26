@@ -1,8 +1,8 @@
+import 'package:controle_estoque_app/ui/components/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/produto.dart';
 import '../view_models/estoque_view.dart';
-
 
 class EstoquePage extends StatelessWidget {
   const EstoquePage({super.key});
@@ -12,10 +12,10 @@ class EstoquePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Estoque Residencial"),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: const Color(0xFF13EC5B), // Verde
         foregroundColor: Colors.white,
       ),
-
+      drawer: const AppDrawer(currentPage: 'estoque'), // Drawer reutilizável
       body: Consumer<EstoqueViewModel>(
         builder: (context, viewModel, child) {
           return StreamBuilder<List<Produto>>(
@@ -38,7 +38,6 @@ class EstoquePage extends StatelessWidget {
                 );
               }
 
-
               final produtos = snapshot.data!;
 
               return ListView.builder(
@@ -52,8 +51,8 @@ class EstoquePage extends StatelessWidget {
                     child: ListTile(
 
                       leading: CircleAvatar(
-                        backgroundColor: Colors.deepPurple[100],
-                        child: Icon(produto.getIcone(), color: Colors.deepPurple),
+                        backgroundColor: const Color(0xFF13EC5B).withOpacity(0.2),
+                        child: Icon(produto.getIcone(), color: const Color(0xFF13EC5B)),
                       ),
                       title: Text(
                         produto.nome,
@@ -95,12 +94,11 @@ class EstoquePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _mostrarDialogoAdicionar(context),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: const Color(0xFF13EC5B), // Verde
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
-
 
   void _mostrarDialogoAdicionar(BuildContext context) {
     final nomeController = TextEditingController();
@@ -143,7 +141,6 @@ class EstoquePage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-
               context.read<EstoqueViewModel>().adicionarProduto(
                 nome: nomeController.text,
                 quantidade: qtdController.text,
@@ -152,6 +149,10 @@ class EstoquePage extends StatelessWidget {
               );
               Navigator.pop(context);
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF13EC5B), // Verde
+              foregroundColor: Colors.white,
+            ),
             child: const Text("Salvar"),
           ),
         ],

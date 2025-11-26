@@ -7,6 +7,8 @@ class Produto {
   final String quantidade;
   final String categoria;
   final int? iconeCodePoint;
+  bool comprado;
+  bool prioridade;
 
   Produto({
     this.id,
@@ -15,16 +17,20 @@ class Produto {
     required this.quantidade,
     required this.categoria,
     this.iconeCodePoint,
+    this.comprado = false,
+    this.prioridade = false,
   });
 
-  factory Produto.fromMap(String docId, Map<String, dynamic> map) {
+ factory Produto.fromMap(String docId, Map<String, dynamic> map) {
     return Produto(
       id: docId,
       nome: map['nome'] ?? '',
       validade: map['validade'] ?? '',
-      quantidade: map['quantidade'] ?? '0',
+      quantidade: map['quantidade']?.toString() ?? '0',
       categoria: map['categoria'] ?? 'Geral',
       iconeCodePoint: map['iconeCodePoint'],
+      comprado: map['comprado'] ?? false,
+      prioridade: map['prioridade'] ?? false,
     );
   }
 
@@ -35,6 +41,8 @@ class Produto {
       'quantidade': quantidade,
       'categoria': categoria,
       'iconeCodePoint': iconeCodePoint,
+      'comprado': comprado,
+      'prioridade': prioridade,
     };
   }
 
@@ -42,4 +50,6 @@ class Produto {
     if (iconeCodePoint == null) return Icons.list;
     return IconData(iconeCodePoint!, fontFamily: 'MaterialIcons');
   }
+
+  String get nomeQuantidade => '$nome - $quantidade';
 }

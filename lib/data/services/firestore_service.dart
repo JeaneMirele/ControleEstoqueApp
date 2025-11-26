@@ -1,12 +1,16 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FirestoreService {
+typedef QueryBuilder = Query Function(Query query);
 
+class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot> getCollectionStream(String path) {
-    return _db.collection(path).snapshots();
+  Stream<QuerySnapshot> getCollectionStream(String path, {QueryBuilder? queryBuilder}) {
+    Query query = _db.collection(path);
+    if (queryBuilder != null) {
+      query = queryBuilder(query);
+    }
+    return query.snapshots();
   }
 
   Future<void> addDocument(String path, Map<String, dynamic> data) {
