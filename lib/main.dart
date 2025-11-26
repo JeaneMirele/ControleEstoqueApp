@@ -1,9 +1,9 @@
-import 'package:controle_estoque_app/ui/view_models/estoque_view.dart';
-import 'package:controle_estoque_app/ui/views/estoque_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'core/di/configure_providers.dart';
+import 'ui/views/estoque_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,26 +12,16 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  final data = await ConfigureProviders.createDependencyTree();
+
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => EstoqueViewModel(),
-        ),
-      ],
-      child: const MeuApp(),
+      providers: data.providers,
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Controle de Estoque',
+        home: EstoquePage(),
+      ),
     ),
   );
-}
-
-class MeuApp extends StatelessWidget {
-  const MeuApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const EstoquePage(),
-    );
-  }
 }

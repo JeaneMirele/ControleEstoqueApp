@@ -1,6 +1,6 @@
 
-import '../../models/Produto.dart';
-import '../services/FirestoreService.dart';
+import '../../models/produto.dart';
+import '../services/firestore_service.dart';
 
 class ProdutoRepository {
   final FirestoreService _service;
