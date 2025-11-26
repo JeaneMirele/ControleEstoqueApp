@@ -72,6 +72,7 @@ class _AddShoppingItemDialogState extends State<AddShoppingItemDialog> {
                 nome: _nome,
                 quantidade: _quantidade,
                 categoria: _categoria,
+                isAutomatic: false,
               );
               // Usa o Provider para encontrar o ViewModel e chamar o método
               Provider.of<ShoppingListViewModel>(context, listen: false).addItem(newItem);

@@ -4,7 +4,7 @@ import 'package:provider/single_child_widget.dart';
 import '../../data/repositories/produto_repository.dart';
 import '../../data/repositories/shopping_list_repository.dart'; // Importado
 import '../../data/services/firestore_service.dart';
-import '../../ui/view_models/estoque_view.dart';
+import '../../ui/view_models/estoque_view_model.dart';
 import '../../ui/view_models/expiration_alerts_view_model.dart';
 import '../../ui/view_models/shopping_list_view_model.dart';
 

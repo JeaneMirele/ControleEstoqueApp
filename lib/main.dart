@@ -1,10 +1,11 @@
+import 'package:controle_estoque_app/ui/views/estoque_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import para o teste
 import 'firebase_options.dart';
 import 'core/di/configure_providers.dart';
-import 'ui/views/estoque_page.dart';
+import 'ui/views/shopping_list_page.dart'; // MUDANÇA: Importa a tela da lista de compras
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,7 @@ void main() async {
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Controle de Estoque',
+        // MUDANÇA: A tela inicial agora é a Lista de Compras, que está dentro do escopo do Provider.
         home: EstoquePage(),
       ),
     ),

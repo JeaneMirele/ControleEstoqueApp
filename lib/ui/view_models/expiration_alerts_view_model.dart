@@ -14,7 +14,7 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
   List<Produto> _produtos = [];
   List<Produto> get produtos => _produtos;
 
-  List<Produto> get vencendoHoje => _produtos.where((p) => diasAteVencer(p.validade) == 0).toList();
+  List<Produto> get vencendoHoje => _produtos.where((p) => diasAteVencer(p.validade) <= 0).toList();
   List<Produto> get vencendoNaSemana => _produtos.where((p) {
     final dias = diasAteVencer(p.validade);
     return dias > 0 && dias <= 7;
@@ -35,7 +35,7 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
     notifyListeners();
 
     _produtosSubscription = _repository.getAllProducts().listen((produtos) {
-      _produtos = produtos.where((p) => diasAteVencer(p.validade) <= 15 && diasAteVencer(p.validade) >= 0).toList();
+      _produtos = produtos.where((p) => diasAteVencer(p.validade) <= 15).toList(); // Ajustado para incluir vencidos
       
       _produtos.sort((a, b) => diasAteVencer(a.validade).compareTo(diasAteVencer(b.validade)));
 
@@ -52,7 +52,7 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
   int diasAteVencer(String dataValidade) {
     try {
       final parts = dataValidade.split('/');
-      if (parts.length != 3) return 999;
+      if (parts.length != 3) return 9999;
       final dia = int.parse(parts[0]);
       final mes = int.parse(parts[1]);
       final ano = int.parse(parts[2]);
@@ -61,7 +61,21 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
       final difference = data.difference(DateTime(hoje.year, hoje.month, hoje.day)).inDays;
       return difference;
     } catch (e) {
-      return 999; // Retorna um número grande se a data for inválida
+      return 9999;
+    }
+  }
+
+  Map<String, dynamic> getAlertStatus(Produto produto) {
+    final dias = diasAteVencer(produto.validade);
+
+    if (dias < 0) {
+      return {'text': 'Vencido há ${-dias} dia(s)', 'color': Colors.red.shade700};
+    } else if (dias == 0) {
+      return {'text': 'Vence Hoje', 'color': Colors.red.shade700};
+    } else if (dias <= 7) {
+      return {'text': 'Vence em $dias dia(s)', 'color': Colors.orange.shade700};
+    } else {
+      return {'text': 'Vence em $dias dia(s)', 'color': Colors.amber.shade800};
     }
   }
 

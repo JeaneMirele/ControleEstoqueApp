@@ -5,14 +5,18 @@ class ShoppingListItem {
   final String nome;
   final String quantidade;
   final String categoria;
+  final bool isAutomatic;
   bool isChecked;
+  final bool prioridade;
 
   ShoppingListItem({
     this.id,
     required this.nome,
     required this.quantidade,
     required this.categoria,
+    required this.isAutomatic,
     this.isChecked = false,
+    this.prioridade = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -21,6 +25,8 @@ class ShoppingListItem {
       'quantidade': quantidade,
       'categoria': categoria,
       'isChecked': isChecked,
+      'isAutomatic': isAutomatic,
+      'prioridade': prioridade,
     };
   }
 
@@ -31,6 +37,8 @@ class ShoppingListItem {
       quantidade: map['quantidade']?.toString() ?? '1',
       categoria: map['categoria'] ?? 'Outros',
       isChecked: map['isChecked'] ?? false,
+      isAutomatic: map['isAutomatic'] ?? false,
+      prioridade: map['prioridade'] ?? false,
     );
   }
 }
