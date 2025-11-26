@@ -1,68 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../models/produto.dart';
+import 'package:provider/provider.dart';
+import '../../models/shopping_list_item.dart';
+import '../view_models/shopping_list_view_model.dart';
 
 class ShoppingItemTile extends StatelessWidget {
-  final Produto produto;
-  final bool comprado;
-  final ValueChanged<bool?> onChanged;
+  final ShoppingListItem item;
 
-  const ShoppingItemTile({
-    super.key,
-    required this.produto,
-    required this.comprado,
-    required this.onChanged,
-  });
+  const ShoppingItemTile({Key? key, required this.item}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyLarge?.color;
+    final viewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
 
     return Opacity(
-      opacity: comprado ? 0.6 : 1.0,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onChanged(!comprado),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: comprado,
-                  onChanged: onChanged,
-                  activeColor: const Color(0xFF13EC5B),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  side: BorderSide(color: theme.unselectedWidgetColor, width: 2),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        produto.nomeQuantidade,
-                        style: TextStyle(
-                          fontSize: 16,
-                          decoration: comprado ? TextDecoration.lineThrough : TextDecoration.none,
-                          color: comprado ? theme.disabledColor : textColor,
-                        ),
-                      ),
-                      Text(
-                        produto.categoria,
-                        style: TextStyle(
-                          fontSize: 12, 
-                          color: theme.textTheme.bodySmall?.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (!comprado && produto.prioridade)
-                  const Icon(Icons.priority_high, color: Colors.orange, size: 20),
-              ],
+      opacity: item.isChecked ? 0.5 : 1.0,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        elevation: 2,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          title: Text(
+            item.nome,
+            style: TextStyle(
+              fontSize: 16,
+              decoration: item.isChecked ? TextDecoration.lineThrough : TextDecoration.none,
             ),
           ),
+          subtitle: Text(item.categoria, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          leading: Checkbox(
+            value: item.isChecked,
+            onChanged: (bool? value) {
+              if (value != null) {
+                viewModel.toggleItemChecked(item.id!, value);
+              }
+            },
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            onPressed: () => viewModel.deleteItem(item.id!),
+          ),
+          onTap: () {
+            viewModel.toggleItemChecked(item.id!, !item.isChecked);
+          },
         ),
       ),
     );

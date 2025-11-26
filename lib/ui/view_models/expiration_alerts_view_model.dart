@@ -24,22 +24,17 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
     return dias > 7 && dias <= 15;
   }).toList();
 
-  // Inicia como 'false' para não mostrar o loading, já que a busca está desativada.
-  bool _isLoading = false;
+  bool _isLoading = true;
   bool get isLoading => _isLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
   void _fetchProdutos() {
-    // A busca de dados do Firebase está temporariamente desativada.
-    // A lista de produtos permanecerá vazia e o estado de carregamento é falso.
-    
-    /* CÓDIGO ORIGINAL PARA REATIVAR O FIREBASE DEPOIS:
     _isLoading = true;
     notifyListeners();
 
-    _produtosSubscription = _repository.getProdutosStream().listen((produtos) {
+    _produtosSubscription = _repository.getAllProducts().listen((produtos) {
       _produtos = produtos.where((p) => diasAteVencer(p.validade) <= 15 && diasAteVencer(p.validade) >= 0).toList();
       
       _produtos.sort((a, b) => diasAteVencer(a.validade).compareTo(diasAteVencer(b.validade)));
@@ -52,7 +47,6 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
       _errorMessage = "Falha ao carregar produtos: $error";
       notifyListeners();
     });
-    */
   }
 
   int diasAteVencer(String dataValidade) {

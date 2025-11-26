@@ -1,21 +1,41 @@
-import 'dart:async'; // Importar para usar Stream.value
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 
 import '../../data/repositories/produto_repository.dart';
+import '../../data/repositories/shopping_list_repository.dart';
 import '../../models/produto.dart';
+import '../../models/shopping_list_item.dart';
 
 class EstoqueViewModel extends ChangeNotifier {
   final ProdutoRepository _repository;
+  final ShoppingListRepository _shoppingListRepository;
 
-  EstoqueViewModel(this._repository);
+  EstoqueViewModel(this._repository, this._shoppingListRepository);
 
-  // Conexão com Firebase temporariamente desativada.
-  // Retorna um stream vazio para evitar que a tela fique carregando indefinidamente.
-  // Stream<List<Produto>> get listaDeProdutos => Stream.value([]);
-  
-  // Para reativar a conexão com o Firebase, comente a linha acima e descomente a linha abaixo.
-  Stream<List<Produto>> get listaDeProdutos => _repository.getAllProducts();
+  Stream<List<Produto>> get listaDeProdutos {
+    // Intercepta o stream de produtos para adicionar a lógica da lista de compras
+    return _repository.getAllProducts().map((produtos) {
+      _verificarEstoqueParaListaDeCompras(produtos);
+      return produtos;
+    });
+  }
+
+  // Método que verifica o estoque e adiciona itens à lista de compras se necessário
+  Future<void> _verificarEstoqueParaListaDeCompras(List<Produto> produtos) async {
+    for (final produto in produtos) {
+      final quantidade = int.tryParse(produto.quantidade) ?? 0;
+      if (quantidade <= 1) {
+        final itemParaCompra = ShoppingListItem(
+          nome: produto.nome,
+          quantidade: produto.quantidade, // Adicionando a quantidade
+          categoria: produto.categoria,
+        );
+        // O repositório já tem a lógica para não adicionar itens duplicados
+        await _shoppingListRepository.addItem(itemParaCompra);
+      }
+    }
+  }
 
   Future<void> adicionarProduto({
     required String nome,
@@ -23,11 +43,6 @@ class EstoqueViewModel extends ChangeNotifier {
     required String quantidade,
     required String categoria,
   }) async {
-    // Ação de adicionar desativada temporariamente, pois o Firebase não está funcionando.
-    // print("Aviso: A funcionalidade de adicionar está desativada enquanto o Firebase estiver offline.");
-    // return; // Impede a execução do código abaixo.
-
-    // CÓDIGO ORIGINAL PARA REATIVAR:
     int iconeAutomatico = _escolherIconePorCategoria(categoria);
 
     final novoProduto = Produto(
@@ -42,20 +57,10 @@ class EstoqueViewModel extends ChangeNotifier {
   }
 
   Future<void> atualizarProduto(Produto produtoEditado) async {
-    // Ação de atualizar desativada temporariamente.
-    // print("Aviso: A funcionalidade de atualizar está desativada enquanto o Firebase estiver offline.");
-    // return;
-
-    // CÓDIGO ORIGINAL PARA REATIVAR:
     await _repository.updateProduct(produtoEditado);
   }
 
   Future<void> excluirProduto(String id) async {
-    // Ação de excluir desativada temporariamente.
-    // print("Aviso: A funcionalidade de excluir está desativada enquanto o Firebase estiver offline.");
-    // return;
-
-    // CÓDIGO ORIGINAL PARA REATIVAR:
     await _repository.deleteProduct(id);
   }
 
