@@ -28,7 +28,7 @@ export const verificarValidadeProdutos = functions.pubsub
 
         try {
             const snapshot = await admin.firestore()
-                .collection('produtos')
+                .collection('estoque')
                 .where('validade', '>=', inicioDoDia)
                 .where('validade', '<=', fimDoDia)
                 .get();
@@ -97,7 +97,7 @@ export const verificarValidadeProdutos = functions.pubsub
 
 
 export const verificarEstoqueBaixo = functions.firestore
-    .document('produtos/{produtoId}')
+    .document('estoque/{produtoId}')
     .onWrite(async (change: functions.Change<functions.firestore.DocumentSnapshot>, context: functions.EventContext) => {
 
 
