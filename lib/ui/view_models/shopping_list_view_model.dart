@@ -7,18 +7,18 @@ import '../../models/shopping_list_item.dart';
 class ShoppingListViewModel extends ChangeNotifier {
   final ShoppingListRepository _repository;
 
-  // Subject para controlar o termo de busca do usuário
+
   final _searchQuery = BehaviorSubject<String>.seeded('');
 
   ShoppingListViewModel(this._repository) {
-    // Inicializa o stream combinado
+
     _initializeStream();
   }
 
   late Stream<List<ShoppingListItem>> shoppingList;
 
   void _initializeStream() {
-    // Combina o stream da lista de compras do repositório com o stream da busca
+
     shoppingList = Rx.combineLatest2(
       _repository.getShoppingList(),
       _searchQuery.stream.debounceTime(const Duration(milliseconds: 300)),
@@ -33,10 +33,10 @@ class ShoppingListViewModel extends ChangeNotifier {
           }).toList();
         }
       },
-    ).asBroadcastStream(); // Usa asBroadcastStream para múltiplos ouvintes
+    ).shareReplay(maxSize: 1);
   }
 
-  // Função para o usuário atualizar o termo de busca
+
   void setSearchQuery(String query) {
     _searchQuery.add(query);
   }
@@ -53,7 +53,7 @@ class ShoppingListViewModel extends ChangeNotifier {
     _repository.deleteItem(id);
   }
 
-  // Limpa os resources quando o ViewModel for descartado
+
   @override
   void dispose() {
     _searchQuery.close();

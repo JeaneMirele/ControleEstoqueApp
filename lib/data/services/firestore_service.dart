@@ -13,6 +13,7 @@ class FirestoreService {
     return query.snapshots();
   }
 
+
   Future<void> addDocument(String path, Map<String, dynamic> data) {
     return _db.collection(path).add(data);
   }

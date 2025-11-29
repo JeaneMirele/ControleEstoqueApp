@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../models/produto.dart';
 
 class EstoqueItemCard extends StatelessWidget {
@@ -19,13 +20,15 @@ class EstoqueItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final Color cardColor = isDarkMode ? Colors.grey[850]! : Colors.white;
-    final Color shadowColor = isDarkMode ? Colors.black.withOpacity(0.4) : Colors.grey.withOpacity(0.2);
+
+
+
     final Color accentColor = _getAccentColor(produto.validade);
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      color: cardColor, 
+      color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -36,20 +39,21 @@ class EstoqueItemCard extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           child: Row(
             children: [
-              // Indicador de validade
+
               Container(
                 width: 5,
-                height: 80, // Altura para alinhar com o conteúdo
+                height: 80,
                 decoration: BoxDecoration(
                   color: accentColor,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
               const SizedBox(width: 12),
-              // Ícone do produto
+
+
               Icon(produto.getIcone(), size: 40, color: isDarkMode ? Colors.white70 : Colors.black54),
               const SizedBox(width: 12),
-              // Informações do produto
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,12 +65,15 @@ class EstoqueItemCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
+
+
                     Text(
-                      'Validade: ${produto.validade}',
+                      'Validade: ${DateFormat('dd/MM/yyyy').format(produto.validade)}',
                       style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
                     ),
+
                     const SizedBox(height: 2),
-                     Text(
+                    Text(
                       'Categoria: ${produto.categoria}',
                       style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
                     ),
@@ -74,18 +81,19 @@ class EstoqueItemCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // Controles de quantidade
+
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   SizedBox(
+                  SizedBox(
                     height: 28,
                     width: 28,
                     child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.add_circle_outline, size: 22),
-                        onPressed: onAumentar,
-                        color: isDarkMode ? Colors.greenAccent : Colors.green,
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.add_circle_outline, size: 22),
+                      onPressed: onAumentar,
+                      color: isDarkMode ? Colors.greenAccent : Colors.green,
                     ),
                   ),
                   Text(
@@ -95,11 +103,11 @@ class EstoqueItemCard extends StatelessWidget {
                   SizedBox(
                     height: 28,
                     width: 28,
-                     child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.remove_circle_outline, size: 22),
-                        onPressed: onDiminuir,
-                        color: isDarkMode ? Colors.redAccent : Colors.red,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.remove_circle_outline, size: 22),
+                      onPressed: onDiminuir,
+                      color: isDarkMode ? Colors.redAccent : Colors.red,
                     ),
                   ),
                 ],
@@ -111,21 +119,18 @@ class EstoqueItemCard extends StatelessWidget {
     );
   }
 
-  Color _getAccentColor(String validadeStr) {
-    // Lógica para determinar a cor com base na validade
-    // (pode ser aprimorada)
-    if (validadeStr.isEmpty) return Colors.grey;
-    try {
-      final parts = validadeStr.split('/');
-      final dataValidade = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
-      final hoje = DateTime.now();
-      final diff = dataValidade.difference(hoje).inDays;
 
-      if (diff < 0) return Colors.red; // Vencido
-      if (diff <= 7) return Colors.orange; // Vence em 7 dias
-      return Colors.green; // Longe de vencer
-    } catch (e) {
-      return Colors.grey;
-    }
+  Color _getAccentColor(DateTime dataValidade) {
+    final hoje = DateTime.now();
+
+
+    final dataValidadeSemHora = DateTime(dataValidade.year, dataValidade.month, dataValidade.day);
+    final hojeSemHora = DateTime(hoje.year, hoje.month, hoje.day);
+
+    final diff = dataValidadeSemHora.difference(hojeSemHora).inDays;
+
+    if (diff < 0) return Colors.red;
+    if (diff <= 2) return Colors.orange;
+    return Colors.green;
   }
 }

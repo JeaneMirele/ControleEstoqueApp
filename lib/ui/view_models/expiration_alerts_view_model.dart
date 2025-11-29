@@ -14,11 +14,14 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
   List<Produto> _produtos = [];
   List<Produto> get produtos => _produtos;
 
+
   List<Produto> get vencendoHoje => _produtos.where((p) => diasAteVencer(p.validade) <= 0).toList();
+
   List<Produto> get vencendoNaSemana => _produtos.where((p) {
     final dias = diasAteVencer(p.validade);
     return dias > 0 && dias <= 7;
   }).toList();
+
   List<Produto> get proximos15dias => _produtos.where((p) {
     final dias = diasAteVencer(p.validade);
     return dias > 7 && dias <= 15;
@@ -35,8 +38,11 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
     notifyListeners();
 
     _produtosSubscription = _repository.getAllProducts().listen((produtos) {
-      _produtos = produtos.where((p) => diasAteVencer(p.validade) <= 15).toList(); // Ajustado para incluir vencidos
-      
+
+      _produtos = produtos.where((p) =>
+      diasAteVencer(p.validade) <= 15 && p.quantidade > 0
+      ).toList();
+
       _produtos.sort((a, b) => diasAteVencer(a.validade).compareTo(diasAteVencer(b.validade)));
 
       _isLoading = false;
@@ -49,27 +55,23 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
     });
   }
 
-  int diasAteVencer(String dataValidade) {
-    try {
-      final parts = dataValidade.split('/');
-      if (parts.length != 3) return 9999;
-      final dia = int.parse(parts[0]);
-      final mes = int.parse(parts[1]);
-      final ano = int.parse(parts[2]);
-      final data = DateTime(ano, mes, dia);
-      final hoje = DateTime.now();
-      final difference = data.difference(DateTime(hoje.year, hoje.month, hoje.day)).inDays;
-      return difference;
-    } catch (e) {
-      return 9999;
-    }
+
+  int diasAteVencer(DateTime dataValidade) {
+    final hoje = DateTime.now();
+
+
+    final dataValidadeZerada = DateTime(dataValidade.year, dataValidade.month, dataValidade.day);
+    final hojeZerado = DateTime(hoje.year, hoje.month, hoje.day);
+
+    return dataValidadeZerada.difference(hojeZerado).inDays;
   }
 
   Map<String, dynamic> getAlertStatus(Produto produto) {
+
     final dias = diasAteVencer(produto.validade);
 
     if (dias < 0) {
-      return {'text': 'Vencido há ${-dias} dia(s)', 'color': Colors.red.shade700};
+      return {'text': 'Vencido há ${dias.abs()} dia(s)', 'color': Colors.red.shade700};
     } else if (dias == 0) {
       return {'text': 'Vence Hoje', 'color': Colors.red.shade700};
     } else if (dias <= 7) {

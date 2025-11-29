@@ -1,0 +1,26 @@
+type User @table {
+  displayName: String!
+  createdAt: Timestamp!
+  email: String
+}
+
+type Product @table {
+  name: String!
+  currentStock: Int!
+  createdAt: Timestamp!
+  description: String
+  sku: String
+  imageUrl: String
+  lowStockThreshold: Int
+  user: User
+}
+
+type StockMovement @table {
+  quantity: Int!
+  movementType: String!
+  createdAt: Timestamp!
+  notes: String
+  reason: String
+  product: Product
+  user: User
+}

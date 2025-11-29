@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +14,10 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _validadeController = TextEditingController();
+
+
+  DateTime? _dataValidadeSelecionada;
+
   int _quantidade = 1;
   String? _categoriaSelecionada;
 
@@ -24,11 +27,13 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
     if (picked != null) {
       setState(() {
+
+        _dataValidadeSelecionada = picked;
         _validadeController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
@@ -54,29 +59,6 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Uploader (UI Placeholder)
-              const Text('Foto (Opcional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              Container(
-                height: 120,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400, width: 2, style: BorderStyle.solid),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[100],
-                ),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('Adicionar Foto', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Product Name
               const Text('Nome do Produto', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextFormField(
@@ -86,7 +68,7 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
               ),
               const SizedBox(height: 24),
 
-              // Quantity
+
               const Text('Quantidade', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               Container(
@@ -112,7 +94,7 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
               ),
               const SizedBox(height: 24),
 
-              // Expiration Date
+
               const Text('Data de Validade', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextFormField(
@@ -124,11 +106,16 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
                 ),
                 readOnly: true,
                 onTap: () => _selectDate(context),
-                 validator: (value) => (value == null || value.isEmpty) ? 'Campo obrigatório' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty || _dataValidadeSelecionada == null) {
+                    return 'Campo obrigatório';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 24),
 
-              // Category
+
               const Text('Categoria', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -147,13 +134,16 @@ class _AddProdutoPageState extends State<AddProdutoPage> {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: () {
-            if (_formKey.currentState!.validate()) {
+
+            if (_formKey.currentState!.validate() && _dataValidadeSelecionada != null) {
+
+
               context.read<EstoqueViewModel>().adicionarProduto(
-                    nome: _nomeController.text,
-                    quantidade: _quantidade.toString(),
-                    categoria: _categoriaSelecionada!,
-                    validade: _validadeController.text,
-                  );
+                nome: _nomeController.text,
+                quantidade: _quantidade,
+                categoria: _categoriaSelecionada!,
+                validade: _dataValidadeSelecionada!,
+              );
               Navigator.of(context).pop();
             }
           },

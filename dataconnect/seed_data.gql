@@ -1,0 +1,60 @@
+mutation CreateSeedData @auth(level: USER) {
+  user_insertMany(data: [
+    {
+      id: "67749193-5806-4403-b4ae-5e3124237b2e",
+      displayName: "Bob Tester",
+      email: "bob@example.com",
+      createdAt: "2024-04-26T12:00:00Z"
+    },
+    {
+      id: "8c2a6697-5931-4414-a6ef-f01c3d1e9104",
+      displayName: "Alice Sample",
+      email: "alice@example.com",
+      createdAt: "2024-04-25T10:00:00Z"
+    }
+  ])
+  product_insertMany(data: [
+    {
+      id: "4c0c9c30-c43f-4a99-9c6e-7128c1a91960",
+      userId: "67749193-5806-4403-b4ae-5e3124237b2e",
+      name: "Example Product 1",
+      description: "This is the first example product.",
+      imageUrl: "http://example.com/product1.jpg",
+      sku: "EP001",
+      currentStock: 50,
+      lowStockThreshold: 10,
+      createdAt: "2024-04-27T08:00:00Z"
+    },
+    {
+      id: "7f3c363d-629e-4d8f-8e7f-4e326e7a7b17",
+      userId: "8c2a6697-5931-4414-a6ef-f01c3d1e9104",
+      name: "Sample Product 2",
+      description: "This is the second sample product.",
+      imageUrl: "http://example.com/product2.jpg",
+      sku: "SP002",
+      currentStock: 100,
+      lowStockThreshold: 20,
+      createdAt: "2024-04-28T14:00:00Z"
+    }
+  ])
+  stockMovement_insertMany(data: [
+    {
+      productId: "4c0c9c30-c43f-4a99-9c6e-7128c1a91960",
+      userId: "67749193-5806-4403-b4ae-5e3124237b2e",
+      movementType: "IN",
+      quantity: 20,
+      reason: "Initial Stock",
+      notes: "First stock received for this product.",
+      createdAt: "2024-04-27T09:00:00Z"
+    },
+    {
+      productId: "7f3c363d-629e-4d8f-8e7f-4e326e7a7b17",
+      userId: "8c2a6697-5931-4414-a6ef-f01c3d1e9104",
+      movementType: "OUT",
+      quantity: 5,
+      reason: "Sale",
+      notes: "First sale of this product.",
+      createdAt: "2024-04-28T15:00:00Z"
+    }
+  ])
+}

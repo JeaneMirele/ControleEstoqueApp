@@ -1,249 +1,242 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../view_models/shopping_list_view_model.dart';
-import '../components/shopping_item_tile.dart';
 import '../../models/shopping_list_item.dart';
+import '../view_models/shopping_list_view_model.dart';
 import '../components/app_drawer.dart';
-import '../components/add_shopping_item_dialog.dart';
 
 class ShoppingListPage extends StatelessWidget {
-  const ShoppingListPage({Key? key}) : super(key: key);
-
-  void _mostrarDialogoDelecao(BuildContext context, ShoppingListItem item) {
-    final viewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmar Exclusão'),
-          content: Text('Você tem certeza que deseja remover "${item.nome}" da lista?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Excluir'),
-              onPressed: () {
-                viewModel.deleteItem(item.id!);
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('"${item.nome}" foi removido.'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  const ShoppingListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final Color primaryColor = const Color(0xFF13EC5B);
-    final Color backgroundColor = isDarkMode ? const Color(0xFF102216) : const Color(0xFFF6F8F6);
-    final Color cardColor = isDarkMode ? const Color(0x8018181B) : Colors.white; // zinc-900/50
-    final Color searchBarColor = isDarkMode ? const Color(0xFF27272A) : const Color(0xFFE4E4E7); // zinc-800 / zinc-200
-    final Color dividerColor = isDarkMode ? const Color(0xFF27272A) : const Color(0xFFE4E4E7); // zinc-800 / zinc-200
+    final viewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: backgroundColor,
-      drawer: const AppDrawer(currentPage: 'shopping_list'),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            elevation: 0,
-            backgroundColor: backgroundColor.withOpacity(0.85),
-            flexibleSpace: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-            title: const Text('Minha Lista de Compras', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            centerTitle: true,
-            leading: Builder(
-              builder: (context) => IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.filter_list),
-                onPressed: () {
-                  // TODO: Implementar filtro
-                },
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-              child: TextField(
-                onChanged: (value) {
-                  viewModel.setSearchQuery(value);
-                },
-                decoration: InputDecoration(
-                  hintText: 'Buscar na lista...',
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 12, right: 8),
-                    child: Icon(Icons.search),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(minHeight: 24, minWidth: 24),
-                  filled: true,
-                  fillColor: searchBarColor,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: primaryColor, width: 2),
-                  ),
+      appBar: AppBar(
+        title: const Text('Minha Lista de Compras'),
+        centerTitle: true,
+      ),
+
+      drawer: const AppDrawer(currentPage: 'ShoppingList'),
+      body: Column(
+        children: [
+
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+
+              onChanged: (value) => viewModel.setSearchQuery(value),
+              decoration: InputDecoration(
+                hintText: 'Buscar na lista...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
           ),
-          StreamBuilder<List<ShoppingListItem>>(
-            stream: viewModel.shoppingList,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const SliverFillRemaining(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart_checkout, size: 60, color: Color(0xFF13EC5B)),
-                          SizedBox(height: 16),
-                          Text(
-                            'Sua despensa está cheia!',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Nenhum item em falta no momento. Adicione um item manualmente se precisar.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+
+
+          Expanded(
+            child: StreamBuilder<List<ShoppingListItem>>(
+              stream: viewModel.shoppingList,
+              builder: (context, snapshot) {
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+
+                if (snapshot.hasError) {
+                  return Center(child: Text("Erro: ${snapshot.error}"));
+                }
+
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.shopping_cart_outlined, size: 60, color: Colors.grey),
+                        SizedBox(height: 10),
+                        Text("Sua lista está vazia!", style: TextStyle(color: Colors.grey)),
+                      ],
                     ),
-                  ),
+                  );
+                }
+
+                final itens = snapshot.data!;
+
+
+                return ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 80), // Espaço pro FAB
+                  itemCount: itens.length,
+                  itemBuilder: (context, index) {
+                    final item = itens[index];
+
+
+                    return Dismissible(
+                      key: Key(item.id ?? UniqueKey().toString()),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        color: Colors.red,
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (_) {
+
+                        if (item.id != null) {
+                          viewModel.deleteItem(item.id!);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("${item.nome} removido")),
+                          );
+                        }
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        child: CheckboxListTile(
+                          title: Text(
+                            item.nome,
+                            style: TextStyle(
+                              decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                              color: item.isChecked ? Colors.grey : Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "${item.quantidade} • ${item.categoria}",
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          ),
+                          value: item.isChecked,
+                          activeColor: Colors.green,
+
+                          onChanged: (bool? value) {
+                            if (item.id != null && value != null) {
+                              viewModel.toggleItemChecked(item.id!, value);
+                            }
+                          },
+                          secondary: _getIconForCategory(item.categoria),
+                        ),
+                      ),
+                    );
+                  },
                 );
-              }
-
-              final items = snapshot.data!;
-              final automaticItems = items.where((i) => i.isAutomatic && !i.isChecked).toList();
-              final manualItems = items.where((i) => !i.isAutomatic && !i.isChecked).toList();
-              final purchasedItems = items.where((i) => i.isChecked).toList();
-
-              return SliverPadding(
-                padding: const EdgeInsets.only(bottom: 96), // Espaço para o FAB
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    if (automaticItems.isNotEmpty)
-                      _buildSection(context, 'Gerado Automaticamente', automaticItems, cardColor, dividerColor),
-                    if (manualItems.isNotEmpty)
-                      _buildSection(context, 'Adicionado Manualmente', manualItems, cardColor, dividerColor),
-                    if (purchasedItems.isNotEmpty)
-                      _buildSection(context, 'Comprados', purchasedItems, cardColor, dividerColor),
-                  ]),
-                ),
-              );
-            },
+              },
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => const AddShoppingItemDialog(),
-          );
-        },
-        backgroundColor: primaryColor,
-        child: const Icon(Icons.add, size: 28, color: Colors.black87),
-        shape: const CircleBorder(),
-        heroTag: 'add_shopping_item_fab',
+        onPressed: () => _mostrarDialogoAdicionar(context, viewModel),
+        backgroundColor: const Color(0xFF28A745),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, List<ShoppingListItem> items, Color cardColor, Color dividerColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: isDarkMode(context)
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
+
+  Widget _getIconForCategory(String categoria) {
+    IconData icon;
+    switch (categoria.toLowerCase()) {
+      case 'laticínios': icon = Icons.water_drop; break;
+      case 'padaria': icon = Icons.breakfast_dining; break;
+      case 'frutas': icon = Icons.apple; break;
+      default: icon = Icons.shopping_bag; break;
+    }
+    return Icon(icon, color: Colors.grey);
+  }
+
+
+  void _mostrarDialogoAdicionar(BuildContext context, ShoppingListViewModel viewModel) {
+    final nomeController = TextEditingController();
+    final qtdController = TextEditingController(text: '1');
+    String categoriaSelecionada = 'Geral'; 
+    final categorias = ['Geral', 'Laticínios', 'Padaria', 'Frutas', 'Limpeza', 'Outros'];
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Adicionar Item'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nomeController,
+                    decoration: const InputDecoration(labelText: 'Nome do produto'),
+                    textCapitalization: TextCapitalization.sentences,
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: qtdController,
+                          decoration: const InputDecoration(labelText: 'Qtd'),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          value: categoriaSelecionada,
+                          decoration: const InputDecoration(labelText: 'Categoria'),
+                          items: categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                          onChanged: (val) {
+                            setState(() => categoriaSelecionada = val!);
+                          },
+                        ),
+                      ),
                     ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return ShoppingItemTile(
-                    item: item,
-                    onLongPress: () => _mostrarDialogoDelecao(context, item),
-                  );
-                },
-                separatorBuilder: (context, index) => Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: dividerColor,
-                  indent: 16,
-                  endIndent: 16,
-                ),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ],
-      ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (nomeController.text.isNotEmpty) {
+                      final novoItem = ShoppingListItem(
+                        nome: nomeController.text.trim(),
+                        quantidade: qtdController.text.trim(),
+                        categoria: categoriaSelecionada,
+                        isChecked: false,
+                        isAutomatic: false,
+
+                      );
+
+
+                      viewModel.addItem(novoItem);
+                      Navigator.pop(ctx);
+                    }
+                  },
+                  child: const Text('Adicionar'),
+                )
+              ],
+            );
+          },
+        );
+      },
     );
   }
-
-  bool isDarkMode(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
 }

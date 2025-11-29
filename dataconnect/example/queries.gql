@@ -1,0 +1,28 @@
+mutation CreateNewUser($displayName: String!, $email: String) @auth(level: USER) {
+  user_insert(data: { displayName: $displayName, email: $email, createdAt_expr: "request.time" })
+}
+
+query GetProductDetails($id: UUID!) @auth(level: USER) {
+  product(id: $id) {
+    id
+    name
+    description
+    imageUrl
+    currentStock
+    lowStockThreshold
+    sku
+  }
+}
+
+mutation UpdateStockLevel($id: UUID!, $quantity: Int!, $reason: String, $notes: String) @auth(level: USER) {
+  stockMovement_insert(data: { productId: $id, quantity: $quantity, reason: $reason, notes: $notes, movementType: "manual_update", userId_expr: "auth.uid", createdAt_expr: "request.time" })
+}
+
+query ListProducts @auth(level: USER) {
+  products {
+    id
+    name
+    description
+    currentStock
+  }
+}

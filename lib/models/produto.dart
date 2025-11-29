@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class Produto {
   String? id;
+  final String? userId;
   final String nome;
-  final String validade;
-  final int quantidade; // Alterado de String para int
+  final DateTime validade;
+  final int quantidade;
   final String categoria;
   final int? iconeCodePoint;
   bool comprado;
@@ -12,6 +15,7 @@ class Produto {
 
   Produto({
     this.id,
+    this.userId,
     required this.nome,
     required this.validade,
     required this.quantidade,
@@ -21,23 +25,25 @@ class Produto {
     this.prioridade = false,
   });
 
-  // Método auxiliar para conversão segura
   static int _parseInt(dynamic value) {
-    if (value is int) {
-      return value;
-    }
-    if (value is String) {
-      return int.tryParse(value) ?? 0;
-    }
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
     return 0;
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 
   factory Produto.fromMap(String docId, Map<String, dynamic> map) {
     return Produto(
       id: docId,
+      userId: map['userId'],
       nome: map['nome'] ?? '',
-      validade: map['validade'] ?? '',
-      quantidade: _parseInt(map['quantidade']), // Conversão segura
+      validade: _parseDate(map['validade']),
+      quantidade: _parseInt(map['quantidade']),
       categoria: map['categoria'] ?? 'Geral',
       iconeCodePoint: map['iconeCodePoint'],
       comprado: map['comprado'] ?? false,
@@ -47,9 +53,10 @@ class Produto {
 
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId,
       'nome': nome,
-      'validade': validade,
-      'quantidade': quantidade, // Agora é um int
+      'validade': Timestamp.fromDate(validade),
+      'quantidade': quantidade,
       'categoria': categoria,
       'iconeCodePoint': iconeCodePoint,
       'comprado': comprado,
@@ -57,18 +64,20 @@ class Produto {
     };
   }
 
+  String get validadeFormatada {
+    return DateFormat('dd/MM/yyyy').format(validade);
+  }
+
   IconData getIcone() {
     if (iconeCodePoint == null) return Icons.list;
     return IconData(iconeCodePoint!, fontFamily: 'MaterialIcons');
   }
 
-  // Atualizado para usar a quantidade como número
-  String get nomeQuantidade => '$nome - ${quantidade.toString()}';
-
   Produto copyWith({
     String? id,
+    String? userId,
     String? nome,
-    String? validade,
+    DateTime? validade,
     int? quantidade,
     String? categoria,
     int? iconeCodePoint,
@@ -77,6 +86,7 @@ class Produto {
   }) {
     return Produto(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       nome: nome ?? this.nome,
       validade: validade ?? this.validade,
       quantidade: quantidade ?? this.quantidade,
