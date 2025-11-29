@@ -1,26 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/shopping_list_item.dart';
 import '../services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class ShoppingListRepository {
   final FirestoreService _firestoreService;
-
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-
 
   ShoppingListRepository(this._firestoreService);
 
-
   Stream<List<ShoppingListItem>> getShoppingList() {
 
-    return _firestoreService.getCollectionStream('shopping_list').map((snapshot) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (userId == null) {
+
+      return Stream.value([]);
+    }
+
+
+    return _firestoreService.getCollectionStream(
+      'shopping_list',
+      queryBuilder: (query) => query
+          .where('userId', isEqualTo: userId)
+          .orderBy('criadoEm', descending: true),
+    ).map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return ShoppingListItem.fromMap(data, doc.id);
       }).toList();
     });
   }
-
 
   Future<void> addItem(ShoppingListItem item) async {
 

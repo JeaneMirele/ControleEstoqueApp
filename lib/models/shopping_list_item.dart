@@ -9,6 +9,10 @@ class ShoppingListItem {
   bool isChecked;
   final bool prioridade;
 
+
+  final String? userId;
+  final DateTime? criadoEm;
+
   ShoppingListItem({
     this.id,
     required this.nome,
@@ -17,6 +21,8 @@ class ShoppingListItem {
     required this.isAutomatic,
     this.isChecked = false,
     this.prioridade = false,
+    this.userId,
+    this.criadoEm,
   });
 
   Map<String, dynamic> toMap() {
@@ -27,6 +33,8 @@ class ShoppingListItem {
       'isChecked': isChecked,
       'isAutomatic': isAutomatic,
       'prioridade': prioridade,
+      'userId': userId,
+      'criadoEm': criadoEm ?? FieldValue.serverTimestamp(),
     };
   }
 
@@ -39,6 +47,10 @@ class ShoppingListItem {
       isChecked: map['isChecked'] ?? false,
       isAutomatic: map['isAutomatic'] ?? false,
       prioridade: map['prioridade'] ?? false,
+      userId: map['userId'],
+      criadoEm: map['criadoEm'] != null
+          ? (map['criadoEm'] as Timestamp).toDate()
+          : null,
     );
   }
 }

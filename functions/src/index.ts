@@ -47,6 +47,10 @@ export const verificarValidadeProdutos = functions.pubsub
                 const qtd = Number(produto.quantidade);
                 if (!qtd || qtd <= 0) return;
 
+                if (!userId) {
+                    console.log(`⚠️ Produto ${docProduto.id} sem userId. Ignorando.`);
+                    return;
+                }
 
                 if (userId) {
                     const userDoc = await admin.firestore().collection('users').doc(userId).get();
@@ -67,6 +71,7 @@ export const verificarValidadeProdutos = functions.pubsub
 
                 const jaNaLista = await admin.firestore()
                     .collection('shopping_list')
+                    .where('userId', '==', userId)
                     .where('nome', '==', produto.nome)
                     .where('isAutomatic', '==', true)
                     .limit(1)
@@ -110,12 +115,17 @@ export const verificarEstoqueBaixo = functions.firestore
         const userId = dadosNovos.userId;
         const qtdAtual = Number(dadosNovos.quantidade);
 
+        if (!userId) {
+            console.log(`⚠️ Produto ${nomeProduto} sem userId. Ignorando.`);
+            return null;
+        }
 
         if (qtdAtual <= 1) {
             console.log(`📉 Estoque baixo detectado para: ${nomeProduto} (Qtd: ${qtdAtual})`);
 
             const querySnapshot = await admin.firestore()
                 .collection('shopping_list')
+                .where('userId', '==', userId)
                 .where('nome', '==', nomeProduto)
                 .where('isAutomatic', '==', true)
                 .where('isChecked', '==', false)

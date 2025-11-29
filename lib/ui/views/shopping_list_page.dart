@@ -74,7 +74,7 @@ class ShoppingListPage extends StatelessWidget {
 
 
                 return ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80), // Espaço pro FAB
+                  padding: const EdgeInsets.only(bottom: 80),
                   itemCount: itens.length,
                   itemBuilder: (context, index) {
                     final item = itens[index];
