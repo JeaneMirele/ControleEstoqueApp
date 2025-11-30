@@ -1,12 +1,11 @@
 import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 
-
 if (!admin.apps.length) {
     admin.initializeApp();
 }
 
-
+// --- Função 1: Notificação de Validade (Roda todo dia às 09:00) ---
 export const verificarValidadeProdutos = functions.pubsub
     .schedule('every day 09:00')
     .timeZone('America/Sao_Paulo')
@@ -52,6 +51,7 @@ export const verificarValidadeProdutos = functions.pubsub
                     return;
                 }
 
+                // 1. Enviar Notificação (se o usuário tiver token)
                 if (userId) {
                     const userDoc = await admin.firestore().collection('users').doc(userId).get();
                     const fcmToken = userDoc.data()?.fcmToken;
@@ -68,7 +68,7 @@ export const verificarValidadeProdutos = functions.pubsub
                     }
                 }
 
-
+                // 2. Adicionar à Lista de Compras
                 const jaNaLista = await admin.firestore()
                     .collection('shopping_list')
                     .where('userId', '==', userId)
@@ -100,55 +100,14 @@ export const verificarValidadeProdutos = functions.pubsub
         return null;
     });
 
-
+// --- Função 2: Monitoramento de Estoque em Tempo Real ---
 export const verificarEstoqueBaixo = functions.firestore
     .document('estoque/{produtoId}')
     .onWrite(async (change: functions.Change<functions.firestore.DocumentSnapshot>, context: functions.EventContext) => {
-
-
-        if (!change.after.exists) return null;
-
-        const dadosNovos = change.after.data();
-        if (!dadosNovos) return null;
-
-        const nomeProduto = dadosNovos.nome;
-        const userId = dadosNovos.userId;
-        const qtdAtual = Number(dadosNovos.quantidade);
-
-        if (!userId) {
-            console.log(`⚠️ Produto ${nomeProduto} sem userId. Ignorando.`);
-            return null;
-        }
-
-        if (qtdAtual <= 1) {
-            console.log(`📉 Estoque baixo detectado para: ${nomeProduto} (Qtd: ${qtdAtual})`);
-
-            const querySnapshot = await admin.firestore()
-                .collection('shopping_list')
-                .where('userId', '==', userId)
-                .where('nome', '==', nomeProduto)
-                .where('isAutomatic', '==', true)
-                .where('isChecked', '==', false)
-                .get();
-
-            if (!querySnapshot.empty) {
-                console.log(`✋ ${nomeProduto} já está na lista.`);
-                return null;
-            }
-
-            await admin.firestore().collection('shopping_list').add({
-                nome: nomeProduto,
-                quantidade: "1",
-                categoria: dadosNovos.categoria || "Geral",
-                isChecked: false,
-                isAutomatic: true,
-                prioridade: true,
-                userId: userId,
-                criadoEm: admin.firestore.FieldValue.serverTimestamp()
-            });
-
-            console.log(`✅ ${nomeProduto} adicionado à lista automaticamente!`);
-        }
-
+        // Lógica desativada para evitar duplicidade. 
+        // O gerenciamento da lista de compras (Adicionar/Remover) agora é feito diretamente 
+        // pelo App (Client-side) no arquivo 'estoque_view_model.dart' para garantir resposta imediata.
+        
+        console.log("ℹ️ Mudança no estoque detectada. O gerenciamento da lista agora é responsabilidade do App.");
         return null;
     });
