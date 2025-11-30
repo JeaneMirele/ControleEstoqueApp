@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart'; // <--- Necessário para acessar o ViewModel
-import '../../ui/view_models/auth_view_model.dart'; // <--- Importe o AuthViewModel
+import 'package:provider/provider.dart';
+import '../../ui/view_models/auth_view_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,8 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-
+  final _familyIdController = TextEditingController();
 
   bool _isLogin = true;
   bool _isLoading = false;
@@ -27,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-
       final authViewModel = context.read<AuthViewModel>();
 
       if (_isLogin) {
@@ -39,13 +37,10 @@ class _LoginPageState extends State<LoginPage> {
         await authViewModel.cadastrar(
           _emailController.text.trim(),
           _passwordController.text.trim(),
+          familyId: _familyIdController.text.trim().isEmpty ? null : _familyIdController.text.trim(),
         );
       }
-
-
-
     } on FirebaseAuthException catch (e) {
-
       String msg = e.message ?? 'Ocorreu um erro desconhecido.';
       if (e.code == 'user-not-found') msg = 'E-mail não cadastrado.';
       if (e.code == 'wrong-password') msg = 'Senha incorreta.';
@@ -73,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _familyIdController.dispose();
     super.dispose();
   }
 
@@ -111,6 +107,21 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 obscureText: true,
               ),
+              
+              // Campo para ID da Família (Apenas no cadastro)
+              if (!_isLogin) ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _familyIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Código da Família (Opcional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.group_add_outlined),
+                    helperText: 'Cole o código para entrar em um grupo existente',
+                  ),
+                ),
+              ],
+
               if (_errorMessage != null) ...[
                 const SizedBox(height: 16),
                 Container(
@@ -151,6 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                     _errorMessage = null;
                     _emailController.clear();
                     _passwordController.clear();
+                    _familyIdController.clear();
                   });
                 },
                 child: Text(_isLogin ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Entre'),

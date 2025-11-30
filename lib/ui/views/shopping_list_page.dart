@@ -2,15 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/shopping_list_item.dart';
 import '../view_models/shopping_list_view_model.dart';
+import '../view_models/auth_view_model.dart';
 import '../components/app_drawer.dart';
 
-class ShoppingListPage extends StatelessWidget {
+class ShoppingListPage extends StatefulWidget {
   const ShoppingListPage({super.key});
+
+  @override
+  State<ShoppingListPage> createState() => _ShoppingListPageState();
+}
+
+class _ShoppingListPageState extends State<ShoppingListPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+      final shoppingViewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
+      
+      if (authViewModel.usuario != null) {
+        shoppingViewModel.updateStream(authViewModel.usuario!.uid, authViewModel.familyId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    final viewModel = Provider.of<ShoppingListViewModel>(context, listen: false);
+    final viewModel = Provider.of<ShoppingListViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -164,6 +184,7 @@ class ShoppingListPage extends StatelessWidget {
     final qtdController = TextEditingController(text: '1');
     String categoriaSelecionada = 'Geral'; 
     final categorias = ['Geral', 'Laticínios', 'Padaria', 'Frutas', 'Limpeza', 'Outros'];
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
     showDialog(
       context: context,
@@ -222,7 +243,8 @@ class ShoppingListPage extends StatelessWidget {
                         categoria: categoriaSelecionada,
                         isChecked: false,
                         isAutomatic: false,
-
+                        familyId: authViewModel.familyId,
+                        userId: authViewModel.usuario?.uid,
                       );
 
 

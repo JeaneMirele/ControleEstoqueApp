@@ -16,7 +16,7 @@ class ExpirationAlertsPage extends StatelessWidget {
       //   title: const Text('Alertas de Vencimento'),
       //   backgroundColor: const Color(0xFF13EC5B),
       // ),
-      drawer: const AppDrawer(currentPage: 'Alertas'),
+      drawer: const AppDrawer(currentPage: 'ExpirationAlerts'),
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(

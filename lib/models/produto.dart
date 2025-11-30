@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 class Produto {
   String? id;
   final String? userId;
+  final String? familyId;
   final String nome;
   final DateTime validade;
   final int quantidade;
@@ -16,6 +17,7 @@ class Produto {
   Produto({
     this.id,
     this.userId,
+    this.familyId,
     required this.nome,
     required this.validade,
     required this.quantidade,
@@ -41,6 +43,7 @@ class Produto {
     return Produto(
       id: docId,
       userId: map['userId'],
+      familyId: map['familyId'], // Mapeamento novo
       nome: map['nome'] ?? '',
       validade: _parseDate(map['validade']),
       quantidade: _parseInt(map['quantidade']),
@@ -54,6 +57,7 @@ class Produto {
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
+      'familyId': familyId,
       'nome': nome,
       'validade': Timestamp.fromDate(validade),
       'quantidade': quantidade,
@@ -76,6 +80,7 @@ class Produto {
   Produto copyWith({
     String? id,
     String? userId,
+    String? familyId,
     String? nome,
     DateTime? validade,
     int? quantidade,
@@ -87,6 +92,7 @@ class Produto {
     return Produto(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      familyId: familyId ?? this.familyId,
       nome: nome ?? this.nome,
       validade: validade ?? this.validade,
       quantidade: quantidade ?? this.quantidade,

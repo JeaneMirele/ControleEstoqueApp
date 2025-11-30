@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/services/notifications_service.dart';
 import '../view_models/auth_view_model.dart';
 import 'estoque_page.dart';
 import 'login_page.dart';
-
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Consumer<AuthViewModel>(
       builder: (context, authViewModel, child) {
-
 
         if (authViewModel.isLoading) {
           return const Scaffold(
@@ -22,14 +18,9 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-
         if (authViewModel.usuario != null) {
-
-          PushNotificationService().initialize(authViewModel.usuario!.uid);
-
           return const EstoquePage();
         }
-
 
         return const LoginPage();
       },

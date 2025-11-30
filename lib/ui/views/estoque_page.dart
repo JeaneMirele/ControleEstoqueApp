@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:controle_estoque_app/ui/components/app_drawer.dart';
 import 'package:controle_estoque_app/ui/view_models/estoque_view_model.dart';
+import 'package:controle_estoque_app/ui/view_models/auth_view_model.dart';
 import 'package:controle_estoque_app/models/produto.dart';
 import 'package:controle_estoque_app/ui/components/estoque_item_card.dart';
 import 'package:controle_estoque_app/ui/views/add_produto_page.dart';
 
-class EstoquePage extends StatelessWidget {
+class EstoquePage extends StatefulWidget {
   const EstoquePage({Key? key}) : super(key: key);
 
+  @override
+  State<EstoquePage> createState() => _EstoquePageState();
+}
+
+class _EstoquePageState extends State<EstoquePage> {
+
+  // --- REMOVIDO: initState ---
+  // O ProxyProvider já garante que o EstoqueViewModel venha com
+  // o userId e familyId corretos. Não precisamos fazer nada aqui.
 
   void _mostrarDialogoDelecao(BuildContext context, Produto produto, EstoqueViewModel viewModel) {
     showDialog(
@@ -43,8 +53,10 @@ class EstoquePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // O Provider vai te dar a instância correta e atualizada automaticamente
+    final viewModel = Provider.of<EstoqueViewModel>(context);
 
-    final viewModel = Provider.of<EstoqueViewModel>(context, listen: false);
+    // Variáveis de tema
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final Color searchBarColor = isDarkMode ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
 
@@ -53,7 +65,7 @@ class EstoquePage extends StatelessWidget {
         title: const Text('Meu Estoque'),
         centerTitle: true,
       ),
-      drawer: const AppDrawer(currentPage: 'estoque'),
+      drawer: const AppDrawer(currentPage: 'Estoque'),
       body: Column(
         children: [
           Padding(
@@ -120,15 +132,9 @@ class EstoquePage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final produto = produtos[index];
 
-
                     return Dismissible(
-
                       key: Key(produto.id ?? UniqueKey().toString()),
-
-
                       direction: DismissDirection.endToStart,
-
-
                       background: Container(
                         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                         decoration: BoxDecoration(
@@ -139,8 +145,6 @@ class EstoquePage extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 20),
                         child: const Icon(Icons.delete_outline, color: Colors.white, size: 32),
                       ),
-
-
                       confirmDismiss: (direction) async {
                         return await showDialog(
                           context: context,
@@ -163,12 +167,9 @@ class EstoquePage extends StatelessWidget {
                           },
                         );
                       },
-
-
                       onDismissed: (direction) {
                         if (produto.id != null) {
                           viewModel.excluirProduto(produto.id!);
-
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -176,7 +177,8 @@ class EstoquePage extends StatelessWidget {
                               action: SnackBarAction(
                                 label: "Desfazer",
                                 onPressed: () {
-
+                                  // CORREÇÃO AQUI:
+                                  // Não precisamos passar familyId, o ViewModel já tem isso salvo internamente.
                                   viewModel.adicionarProduto(
                                     nome: produto.nome,
                                     quantidade: produto.quantidade,
@@ -189,8 +191,6 @@ class EstoquePage extends StatelessWidget {
                           );
                         }
                       },
-
-
                       child: EstoqueItemCard(
                         produto: produto,
                         onAumentar: () => viewModel.aumentarQuantidade(produto),

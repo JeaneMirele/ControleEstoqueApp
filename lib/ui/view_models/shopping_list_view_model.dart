@@ -18,22 +18,33 @@ class ShoppingListViewModel extends ChangeNotifier {
   late Stream<List<ShoppingListItem>> shoppingList;
 
   void _initializeStream() {
-
+    // Inicializa vazio ou com padrão, mas será atualizado pela UI
     shoppingList = Rx.combineLatest2(
       _repository.getShoppingList(),
       _searchQuery.stream.debounceTime(const Duration(milliseconds: 300)),
-      (List<ShoppingListItem> items, String query) {
-        if (query.isEmpty) {
-          return items;
-        } else {
-          final lowerCaseQuery = query.toLowerCase();
-          return items.where((item) {
-            return item.nome.toLowerCase().contains(lowerCaseQuery) ||
-                   item.categoria.toLowerCase().contains(lowerCaseQuery);
-          }).toList();
-        }
-      },
+      _filterList,
     ).shareReplay(maxSize: 1);
+  }
+  
+  void updateStream(String? userId, String? familyId) {
+    shoppingList = Rx.combineLatest2(
+      _repository.getShoppingList(userId: userId, familyId: familyId),
+      _searchQuery.stream.debounceTime(const Duration(milliseconds: 300)),
+      _filterList,
+    ).shareReplay(maxSize: 1);
+    notifyListeners();
+  }
+  
+  List<ShoppingListItem> _filterList(List<ShoppingListItem> items, String query) {
+    if (query.isEmpty) {
+      return items;
+    } else {
+      final lowerCaseQuery = query.toLowerCase();
+      return items.where((item) {
+        return item.nome.toLowerCase().contains(lowerCaseQuery) ||
+               item.categoria.toLowerCase().contains(lowerCaseQuery);
+      }).toList();
+    }
   }
 
 

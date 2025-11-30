@@ -10,22 +10,23 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Utilitários e Estado
+
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
-  intl: ^0.19.0        # Versão estável e compatível
+  intl: ^0.19.0
   rxdart: ^0.27.7
 
-  # Firebase
+
   firebase_core: ^3.0.0
   cloud_firestore: ^5.0.0
   firebase_auth: ^5.0.0
   firebase_messaging: ^15.0.0
+  flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0 # Versão compatível com Dart 3.0+
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true

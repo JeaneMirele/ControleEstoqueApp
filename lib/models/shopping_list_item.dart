@@ -11,6 +11,7 @@ class ShoppingListItem {
 
 
   final String? userId;
+  final String? familyId; // Novo campo
   final DateTime? criadoEm;
 
   ShoppingListItem({
@@ -22,6 +23,7 @@ class ShoppingListItem {
     this.isChecked = false,
     this.prioridade = false,
     this.userId,
+    this.familyId,
     this.criadoEm,
   });
 
@@ -34,6 +36,7 @@ class ShoppingListItem {
       'isAutomatic': isAutomatic,
       'prioridade': prioridade,
       'userId': userId,
+      'familyId': familyId,
       'criadoEm': criadoEm ?? FieldValue.serverTimestamp(),
     };
   }
@@ -48,6 +51,7 @@ class ShoppingListItem {
       isAutomatic: map['isAutomatic'] ?? false,
       prioridade: map['prioridade'] ?? false,
       userId: map['userId'],
+      familyId: map['familyId'],
       criadoEm: map['criadoEm'] != null
           ? (map['criadoEm'] as Timestamp).toDate()
           : null,
