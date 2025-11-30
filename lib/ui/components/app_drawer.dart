@@ -100,7 +100,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Sair', style: TextStyle(color: Colors.red)),
             onTap: () {
-              // Captura o ViewModel antes de fechar o drawer para garantir que o contexto ainda é válido
+
               final authViewModel = context.read<AuthViewModel>();
               Navigator.pop(context); 
               authViewModel.sair();

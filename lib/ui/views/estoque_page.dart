@@ -16,9 +16,6 @@ class EstoquePage extends StatefulWidget {
 
 class _EstoquePageState extends State<EstoquePage> {
 
-  // --- REMOVIDO: initState ---
-  // O ProxyProvider já garante que o EstoqueViewModel venha com
-  // o userId e familyId corretos. Não precisamos fazer nada aqui.
 
   void _mostrarDialogoDelecao(BuildContext context, Produto produto, EstoqueViewModel viewModel) {
     showDialog(
@@ -53,10 +50,10 @@ class _EstoquePageState extends State<EstoquePage> {
 
   @override
   Widget build(BuildContext context) {
-    // O Provider vai te dar a instância correta e atualizada automaticamente
+
     final viewModel = Provider.of<EstoqueViewModel>(context);
 
-    // Variáveis de tema
+
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final Color searchBarColor = isDarkMode ? const Color(0xFF27272A) : const Color(0xFFE4E4E7);
 
@@ -177,8 +174,7 @@ class _EstoquePageState extends State<EstoquePage> {
                               action: SnackBarAction(
                                 label: "Desfazer",
                                 onPressed: () {
-                                  // CORREÇÃO AQUI:
-                                  // Não precisamos passar familyId, o ViewModel já tem isso salvo internamente.
+
                                   viewModel.adicionarProduto(
                                     nome: produto.nome,
                                     quantidade: produto.quantidade,

@@ -16,7 +16,6 @@ class UserService {
       }
     }
 
-    // Se não tiver família, cria uma nova usando o próprio UID do usuário como ID da família
     final newFamilyId = user.uid; 
     
     await userDocRef.set({
@@ -29,11 +28,11 @@ class UserService {
     return newFamilyId;
   }
 
-  /// Cria ou atualiza o perfil do usuário, permitindo vincular a uma família existente
+
   Future<void> createUserProfile(User user, {String? familyId}) async {
     final userDocRef = _firestore.collection('users').doc(user.uid);
     
-    // Se foi passado um familyId, usa ele. Senão, usa o UID do usuário (nova família)
+
     final finalFamilyId = (familyId != null && familyId.isNotEmpty) ? familyId : user.uid;
 
     await userDocRef.set({
@@ -45,7 +44,7 @@ class UserService {
   }
 
   Future<void> joinFamily(String userId, String familyId) async {
-    // Atualiza o documento do usuário com o novo familyId
+
     await _firestore.collection('users').doc(userId).update({
       'familyId': familyId,
     });
@@ -59,7 +58,6 @@ class UserService {
      return null;
   }
 
-  /// Retorna um Stream com a lista de membros da família
   Stream<List<AppUser>> getFamilyMembersStream(String familyId) {
     return _firestore.collection('users')
       .where('familyId', isEqualTo: familyId)

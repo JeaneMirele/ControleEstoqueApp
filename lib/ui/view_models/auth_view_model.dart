@@ -12,7 +12,7 @@ class AuthViewModel extends ChangeNotifier {
 
   User? _usuario;
   User? get usuario => _usuario;
-  
+
   String? _familyId;
   String? get familyId => _familyId;
 
@@ -26,20 +26,22 @@ class AuthViewModel extends ChangeNotifier {
   void _monitorarStatusAuth() {
     _authService.authStateChanges.listen((user) async {
       _usuario = user;
-      
+
       if (user != null) {
-        print("Usuário logado (${user.email}). Inicializando serviços...");
-        
-
+        // 1. Busca o ID da família
         _familyId = await _userService.getOrCreateFamilyId(user);
-        
-        _notificationService.initialize(user.uid);
-        _notificationService.verificarValidadeFirebase();
 
+        // 2. Inicializa o serviço de notificações
+        await _notificationService.initialize();
+
+        // 3. Verifica se tem produtos vencendo na família
+        if (_familyId != null) {
+          _notificationService.verificarValidadePorFamilia(_familyId!);
+        }
       } else {
         _familyId = null;
       }
-      
+
       _isLoading = false;
       notifyListeners();
     });
@@ -51,28 +53,31 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> cadastrar(String email, String password, {String? familyId}) async {
     await _authService.signUp(email: email, password: password);
-    
-    // Se o cadastro for bem sucedido e tivermos um usuário, cria o perfil (com ou sem família vinculada)
+
     if (_authService.currentUser != null) {
-       await _userService.createUserProfile(_authService.currentUser!, familyId: familyId);
-       // Atualiza o ID localmente para refletir a mudança imediatamente se necessário
-       if (familyId != null) {
-         _familyId = familyId;
-       }
+      await _userService.createUserProfile(_authService.currentUser!, familyId: familyId);
+
+      if (familyId != null) {
+        _familyId = familyId;
+      }
     }
   }
 
   Future<void> sair() async {
     await _authService.signOut();
   }
-  
+
   Future<void> entrarEmFamilia(String novoIdFamilia) async {
     if (_usuario == null) return;
-    
+
     try {
       await _userService.joinFamily(_usuario!.uid, novoIdFamilia);
       _familyId = novoIdFamilia;
-      notifyListeners(); 
+
+      // CORREÇÃO: Passamos apenas o novoIdFamilia, pois o serviço já sabe o que fazer
+      _notificationService.verificarValidadePorFamilia(novoIdFamilia);
+
+      notifyListeners();
     } catch (e) {
       print("Erro ao entrar na família: $e");
       rethrow;

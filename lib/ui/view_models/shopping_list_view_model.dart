@@ -18,7 +18,7 @@ class ShoppingListViewModel extends ChangeNotifier {
   late Stream<List<ShoppingListItem>> shoppingList;
 
   void _initializeStream() {
-    // Inicializa vazio ou com padrão, mas será atualizado pela UI
+
     shoppingList = Rx.combineLatest2(
       _repository.getShoppingList(),
       _searchQuery.stream.debounceTime(const Duration(milliseconds: 300)),
