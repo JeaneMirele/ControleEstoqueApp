@@ -77,8 +77,18 @@ class ConfigureProviders {
       ),
 
 
-      ChangeNotifierProvider<ExpirationAlertsViewModel>(
+      ChangeNotifierProxyProvider<AuthViewModel, ExpirationAlertsViewModel>(
         create: (_) => ExpirationAlertsViewModel(produtoRepository),
+        update: (_, authViewModel, previousViewModel) {
+          final userId = authViewModel.usuario?.uid;
+          final familyId = authViewModel.familyId;
+
+          return ExpirationAlertsViewModel(
+            produtoRepository,
+            userId: userId,
+            familyId: familyId,
+          );
+        },
       ),
     ]);
   }

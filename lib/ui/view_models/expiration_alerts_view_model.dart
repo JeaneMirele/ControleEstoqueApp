@@ -5,9 +5,11 @@ import '../../models/produto.dart';
 
 class ExpirationAlertsViewModel extends ChangeNotifier {
   final ProdutoRepository _repository;
+  final String? userId;
+  final String? familyId;
   StreamSubscription<List<Produto>>? _produtosSubscription;
 
-  ExpirationAlertsViewModel(this._repository) {
+  ExpirationAlertsViewModel(this._repository, {this.userId, this.familyId}) {
     _fetchProdutos();
   }
 
@@ -15,15 +17,15 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
   List<Produto> get produtos => _produtos;
 
 
-  List<Produto> get vencendoHoje => _produtos.where((p) => diasAteVencer(p.validade) <= 0).toList();
+  List<Produto> get vencendoHoje => _produtos.where((p) => diasAteVencer(p.validade!) <= 0).toList();
 
   List<Produto> get vencendoNaSemana => _produtos.where((p) {
-    final dias = diasAteVencer(p.validade);
+    final dias = diasAteVencer(p.validade!);
     return dias > 0 && dias <= 7;
   }).toList();
 
   List<Produto> get proximos15dias => _produtos.where((p) {
-    final dias = diasAteVencer(p.validade);
+    final dias = diasAteVencer(p.validade!);
     return dias > 7 && dias <= 15;
   }).toList();
 
@@ -37,13 +39,13 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _produtosSubscription = _repository.getAllProducts().listen((produtos) {
+    _produtosSubscription = _repository.getAllProducts(userId: userId, familyId: familyId).listen((produtos) {
 
       _produtos = produtos.where((p) =>
-      diasAteVencer(p.validade) <= 15 && p.quantidade > 0
+      p.validade != null && diasAteVencer(p.validade!) <= 15 && p.quantidade > 0
       ).toList();
 
-      _produtos.sort((a, b) => diasAteVencer(a.validade).compareTo(diasAteVencer(b.validade)));
+      _produtos.sort((a, b) => diasAteVencer(a.validade!).compareTo(diasAteVencer(b.validade!)));
 
       _isLoading = false;
       _errorMessage = null;
@@ -68,7 +70,7 @@ class ExpirationAlertsViewModel extends ChangeNotifier {
 
   Map<String, dynamic> getAlertStatus(Produto produto) {
 
-    final dias = diasAteVencer(produto.validade);
+    final dias = diasAteVencer(produto.validade!);
 
     if (dias < 0) {
       return {'text': 'Vencido há ${dias.abs()} dia(s)', 'color': Colors.red.shade700};
