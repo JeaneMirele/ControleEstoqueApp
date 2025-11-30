@@ -1,29 +1,30 @@
 import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
 
+
 if (!admin.apps.length) {
     admin.initializeApp();
 }
 
-// --- Função 1: Notificação de Validade (Roda todo dia às 09:00) ---
+
 export const verificarValidadeProdutos = functions.pubsub
     .schedule('every day 09:00')
     .timeZone('America/Sao_Paulo')
-    .onRun(async () => {
+    .onRun(async (context) => {
 
-        const DIAS_PARA_AVISAR = 5;
+
         const hoje = new Date();
 
-        const dataAlvo = new Date();
-        dataAlvo.setDate(hoje.getDate() + DIAS_PARA_AVISAR);
 
-        const inicioDoDia = new Date(dataAlvo);
+        const inicioDoDia = new Date(hoje);
         inicioDoDia.setHours(0, 0, 0, 0);
 
-        const fimDoDia = new Date(dataAlvo);
+
+        const fimDoDia = new Date(hoje);
+        fimDoDia.setDate(hoje.getDate() + 1);
         fimDoDia.setHours(23, 59, 59, 999);
 
-        console.log(`🔎 Buscando produtos vencendo entre ${inicioDoDia.toISOString()} e ${fimDoDia.toISOString()}`);
+        console.log(`🔎 MODO TESTE: Buscando produtos vencendo entre ${inicioDoDia.toISOString()} e ${fimDoDia.toISOString()}`);
 
         try {
             const snapshot = await admin.firestore()
@@ -33,7 +34,7 @@ export const verificarValidadeProdutos = functions.pubsub
                 .get();
 
             if (snapshot.empty) {
-                console.log('✅ Nenhum produto vencendo nesta data.');
+                console.log('✅ Nenhum produto vencendo hoje ou amanhã.');
                 return null;
             }
 
@@ -42,43 +43,57 @@ export const verificarValidadeProdutos = functions.pubsub
             const promessas = snapshot.docs.map(async (docProduto) => {
                 const produto = docProduto.data();
                 const userId = produto.userId;
-
+                const familyId = produto.familyId;
                 const qtd = Number(produto.quantidade);
-                if (!qtd || qtd <= 0) return;
 
+                if (!qtd || qtd <= 0) return;
                 if (!userId) {
                     console.log(`⚠️ Produto ${docProduto.id} sem userId. Ignorando.`);
                     return;
                 }
 
-                // 1. Enviar Notificação (se o usuário tiver token)
-                if (userId) {
-                    const userDoc = await admin.firestore().collection('users').doc(userId).get();
-                    const fcmToken = userDoc.data()?.fcmToken;
 
-                    if (fcmToken) {
-                        const message = {
-                            notification: {
-                                title: "Produto Vencendo! ⚠️",
-                                body: `Seu item "${produto.nome}" vence em ${DIAS_PARA_AVISAR} dias. Adicionamos à lista de compras!`
-                            },
-                            token: fcmToken
-                        };
-                        await admin.messaging().send(message).catch(e => console.error(`Erro notificação:`, e));
-                    }
+                const dataValidade = (produto.validade && typeof produto.validade.toDate === 'function')
+                    ? produto.validade.toDate()
+                    : new Date(produto.validade);
+
+                const diffTempo = dataValidade.getTime() - hoje.getTime();
+                const diasRestantes = Math.ceil(diffTempo / (1000 * 3600 * 24));
+                const textoDias = diasRestantes <= 0 ? "HOJE" : "AMANHÃ";
+
+
+                const userDoc = await admin.firestore().collection('users').doc(userId).get();
+                const userData = userDoc.data();
+                const fcmToken = userData?.fcmToken;
+
+                if (fcmToken) {
+                    const message = {
+                        notification: {
+                            title: "Produto Vencendo! ⚠️",
+                            body: `Atenção: Seu item "${produto.nome}" vence ${textoDias}. Adicionamos à lista!`
+                        },
+                        token: fcmToken
+                    };
+                    await admin.messaging().send(message).catch(e => console.error(`Erro notificação:`, e));
                 }
 
-                // 2. Adicionar à Lista de Compras
-                const jaNaLista = await admin.firestore()
-                    .collection('shopping_list')
-                    .where('userId', '==', userId)
+
+                let query = admin.firestore().collection('shopping_list');
+
+                if (familyId) {
+                    query = query.where('familyId', '==', familyId);
+                } else {
+                    query = query.where('userId', '==', userId);
+                }
+
+                const jaNaLista = await query
                     .where('nome', '==', produto.nome)
                     .where('isAutomatic', '==', true)
                     .limit(1)
                     .get();
 
                 if (jaNaLista.empty) {
-                    await admin.firestore().collection('shopping_list').add({
+                    const itemToAdd: any = {
                         nome: produto.nome,
                         quantidade: "1",
                         categoria: produto.categoria || "Geral",
@@ -87,7 +102,13 @@ export const verificarValidadeProdutos = functions.pubsub
                         prioridade: true,
                         userId: userId,
                         criadoEm: admin.firestore.FieldValue.serverTimestamp()
-                    });
+                    };
+
+                    if (familyId) {
+                        itemToAdd.familyId = familyId;
+                    }
+
+                    await admin.firestore().collection('shopping_list').add(itemToAdd);
                 }
             });
 
@@ -96,18 +117,12 @@ export const verificarValidadeProdutos = functions.pubsub
         } catch (error) {
             console.error("❌ Erro fatal na função:", error);
         }
-
         return null;
     });
 
-// --- Função 2: Monitoramento de Estoque em Tempo Real ---
-export const verificarEstoqueBaixo = functions.firestore
+exports.verificarEstoqueBaixo = functions.firestore
     .document('estoque/{produtoId}')
-    .onWrite(async (change: functions.Change<functions.firestore.DocumentSnapshot>, context: functions.EventContext) => {
-        // Lógica desativada para evitar duplicidade. 
-        // O gerenciamento da lista de compras (Adicionar/Remover) agora é feito diretamente 
-        // pelo App (Client-side) no arquivo 'estoque_view_model.dart' para garantir resposta imediata.
-        
-        console.log("ℹ️ Mudança no estoque detectada. O gerenciamento da lista agora é responsabilidade do App.");
-        return null;
-    });
+    .onWrite(async (change, context) => {
+    console.log("ℹ️ Mudança no estoque detectada. O gerenciamento da lista agora é responsabilidade do App.");
+    return null;
+});
